@@ -762,7 +762,9 @@ module Searchkick
         else
           # expand ranges
           if value.is_a?(Range)
-            value = {gte: value.first, (value.exclude_end? ? :lt : :lte) => value.last}
+            start_of_range = convert_infinity(value.first)
+            end_of_range = convert_infinity(value.last)
+            value = {gte: start_of_range, (value.exclude_end? ? :lt : :lte) => end_of_range}
           end
 
           value = {in: value} if value.is_a?(Array)
@@ -852,6 +854,12 @@ module Searchkick
         end
       end
       filters
+    end
+
+    def convert_infinity(value)
+      return 'Infinity' if value == Float::INFINITY
+      return '-Infinity' if value == -Float::INFINITY
+      value
     end
 
     def term_filters(field, value)
